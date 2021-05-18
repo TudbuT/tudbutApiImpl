@@ -4,7 +4,10 @@ import de.tudbut.timer.AsyncTask;
 import de.tudbut.tools.Hasher;
 import tudbut.net.http.HTTPRequest;
 import tudbut.net.http.HTTPRequestType;
+import tudbut.net.http.HTTPUtils;
 import tudbut.net.http.ParsedHTTPValue;
+import tudbut.net.pbic2.PBIC2;
+import tudbut.obj.TLMap;
 import tudbut.parsing.TCN;
 import tudbut.parsing.TCN.TCNException;
 import tudbut.tools.ArrayTools;
@@ -17,7 +20,11 @@ import static tudbut.api.impl.TudbuTAPIV2.checkRateLimit;
 
 @SuppressWarnings("unused")
 public class TudbuTAPI {
+    public static final String host = "localhost";
+    public static final int port = 8080;
+    
     static final Lock rateLimitLock = new Lock();
+    static final TLMap<UUID, PBIC2> gateway = new TLMap<>();
 
     public static void awaitRateLimitEnd() {
         rateLimitLock.waitHere();
@@ -97,13 +104,29 @@ public class TudbuTAPI {
     public static String setPassword(UUID uuid, String key, String password) throws RateLimit, IOException {
         return get("setPassword", "uuid=" + uuid.toString() + "&key=" + key + "&password=" + Hasher.sha512hex(Hasher.sha256hex(password)));
     }
+    
+    public static UserRecord adminGetUserRecord(UUID uuid, String key) throws RateLimit, IOException {
+        try {
+            return new UserRecord(uuid, TCN.read(get("admin/getUserRecordExact", "uuid=" + uuid.toString() + "&key=" + HTTPUtils.encodeUTF8(key))));
+        } catch (TCNException var2) {
+            return null;
+        }
+    }
+    
+    public static UserRecord adminGetUserRecordByName(String name, String key) throws RateLimit, IOException {
+        try {
+            return new UserRecord(null, TCN.read(get("admin/getUserRecordByNameExact", "name=" + name + "&key=" + HTTPUtils.encodeUTF8(key))));
+        } catch (TCNException var2) {
+            return null;
+        }
+    }
 
     public static Lock getRateLimitLock() {
         return rateLimitLock;
     }
 
     public static String get(String method, String params) throws RateLimit, IOException {
-        HTTPRequest request = new HTTPRequest(HTTPRequestType.GET, "api.tudbut.de", 80, "/api/" + method + "?" + params);
+        HTTPRequest request = new HTTPRequest(HTTPRequestType.GET, host, port, "/api/" + method + "?" + params);
         ParsedHTTPValue response = request.send().parse();
         checkRateLimit(response, null);
         return response.getBody();

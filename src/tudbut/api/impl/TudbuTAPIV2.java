@@ -3,6 +3,8 @@ package tudbut.api.impl;
 import de.tudbut.timer.AsyncTask;
 import de.tudbut.tools.Hasher;
 import sun.awt.windows.ThemeReader;
+import tudbut.io.TypedInputStream;
+import tudbut.io.TypedOutputStream;
 import tudbut.net.http.*;
 import tudbut.net.pbic2.*;
 import tudbut.obj.DoubleTypedObject;
@@ -13,6 +15,7 @@ import tudbut.tools.encryption.KeyStream;
 import tudbut.tools.encryption.RawKey;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -20,6 +23,8 @@ import java.util.UUID;
 import static tudbut.api.impl.TudbuTAPI.rateLimitLock;
 
 public class TudbuTAPIV2 {
+    public static final String host = TudbuTAPI.host;
+    public static final int port = TudbuTAPI.port;
     
     public static DoubleTypedObject<Integer, RawKey> getReq(UUID uuid) {
         return req.get(uuid).clone();
@@ -37,12 +42,12 @@ public class TudbuTAPIV2 {
             rateLimitLock.waitHere();
             
             // Get key
-            request = new HTTPRequest(HTTPRequestType.POST, "api.tudbut.de", 80, "/api/v2/handshake/login?uuid=" + uuid);
+            request = new HTTPRequest(HTTPRequestType.POST, host, port, "/api/v2/handshake/login?uuid=" + uuid);
             key = new RawKey((p = request.send().parse()).getBodyRaw());
             checkRateLimit(p, null);
     
             // Check key
-            request = new HTTPRequest(HTTPRequestType.POST, "api.tudbut.de", 80, "/api/v2/handshake/check?uuid=" + uuid, HTTPContentType.TXT, key.encryptString("OK.C"));
+            request = new HTTPRequest(HTTPRequestType.POST, host, port, "/api/v2/handshake/check?uuid=" + uuid, HTTPContentType.TXT, key.encryptString("OK.C"));
             s = key.decryptString((p = request.send().parse()).getBodyRaw());
             checkRateLimit(p, null);
         }
@@ -117,7 +122,7 @@ public class TudbuTAPIV2 {
     
     public static DoubleTypedObject<Boolean, String> request(UUID uuid, String path, String body) throws IOException, RateLimit {
         RawKey key = req.get(uuid).t;
-        HTTPRequest request = new HTTPRequest(HTTPRequestType.POST, "api.tudbut.de", 80, "/api/v2/" + path + "?uuid=" + uuid, HTTPContentType.TXT, key.encryptString(body), nextAuthorizationHeader(uuid));
+        HTTPRequest request = new HTTPRequest(HTTPRequestType.POST, host, port, "/api/v2/" + path + "?uuid=" + uuid, HTTPContentType.TXT, key.encryptString(body), nextAuthorizationHeader(uuid));
         ParsedHTTPValue p = request.send().parse();
         checkRateLimit(p, uuid);
         String s = p.getBodyRaw();
@@ -130,13 +135,21 @@ public class TudbuTAPIV2 {
     
     public static PBIC2 connectGateway(UUID uuid) throws IOException {
         KeyStream key = new KeyStream(req.get(uuid).t);
-        HTTPRequest request = new HTTPRequest(HTTPRequestType.POST, "api.tudbut.de", 80, "/api/v2/gateway?uuid=" + uuid, HTTPContentType.ANY, "", nextAuthorizationHeader(uuid));
+        HTTPRequest request = new HTTPRequest(HTTPRequestType.POST, host, port, "/api/v2/gateway?uuid=" + uuid, HTTPContentType.ANY, "", nextAuthorizationHeader(uuid));
         return new PBIC2() {
-            private final PBIC2 c = new PBIC2Client(request, key::decrypt, key::encrypt);
+            private final PBIC2 c = new PBIC2Client(request, i -> {
+                i = key.decrypt(i);
+                System.out.write(i);
+                return i;
+            }, i -> {
+                i = key.encrypt(i);
+                return i;
+            });
             
             @Override
             public String readMessage() throws IOException {
                 String m = c.readMessage();
+                System.out.println();
                 try {
                     if(JSON.read(m).getString("id").equals("restart")) {
                         throw new Restart();
@@ -156,6 +169,21 @@ public class TudbuTAPIV2 {
             public String writeMessageWithResponse(String s) throws IOException {
                 writeMessage(s);
                 return readMessage();
+            }
+    
+            @Override
+            public Socket getSocket() {
+                return c.getSocket();
+            }
+    
+            @Override
+            public TypedInputStream getInput() {
+                return c.getInput();
+            }
+    
+            @Override
+            public TypedOutputStream getOutput() {
+                return c.getOutput();
             }
         };
     }

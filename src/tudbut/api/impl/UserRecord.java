@@ -1,10 +1,10 @@
 package tudbut.api.impl;
 
 import tudbut.parsing.TCN;
-import tudbut.tools.Lock;
+import tudbut.tools.encryption.RawKey;
 
-import java.io.IOException;
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 public class UserRecord {
@@ -20,62 +20,79 @@ public class UserRecord {
     public long lastPlayRequest = 0;
     public boolean deactivate = false;
     public boolean singleDeactivate = false;
+    public RawKey key = new RawKey("");
+    public boolean handshakeSucceeded = false;
+    public int req = 0;
+    public String version = "";
+    public String ip = "";
     
-    /**
-     * Creates a UserRecord with given information
-     *
-     * @param uuid The UUID of the player, can be null
-     * @param tcn The TCN of the record
-     */
     UserRecord(UUID uuid, TCN tcn) {
-        
-        try {
-            lastNameUpdate = tcn.getLong("lastNameUpdate");
-            registered = tcn.getBoolean("registered");
-            hashedPassword = tcn.getString("password");
-            lastLogin = tcn.getLong("lastLogin");
-            name = tcn.getString("name");
-            playTime = tcn.getLong("playTime");
-            lastPlayRequest = tcn.getLong("lastPlayRequest");
-            deactivate = tcn.getBoolean("deactivate");
-            singleDeactivate = tcn.getBoolean("singleDeactivate");
-        } catch (Exception ignored) { }
-        this.uuid = uuid;
-        this.tcn = tcn;
-        
+        synchronized (UserRecord.class) {
+            
+            try {
+                lastNameUpdate = tcn.getLong("lastNameUpdate");
+                registered = tcn.getBoolean("registered");
+                hashedPassword = tcn.getString("password");
+                lastLogin = tcn.getLong("lastLogin");
+                name = tcn.getString("name");
+                playTime = tcn.getLong("playTime");
+                lastPlayRequest = tcn.getLong("lastPlayRequest");
+                deactivate = tcn.getBoolean("deactivate");
+                singleDeactivate = tcn.getBoolean("singleDeactivate");
+                key = new RawKey(tcn.getString("key"));
+                handshakeSucceeded = tcn.getBoolean("handshakeSucceeded");
+                version = tcn.getString("version");
+                req = tcn.getInteger("req");
+                ip = tcn.getString("ip");
+            }
+            catch (Exception ignored) { }
+            
+            if (name == null || name.isEmpty()) {
+                name = "FETCH_ERROR_" + uuid;
+            }
+            
+            this.uuid = uuid;
+            this.tcn = tcn;
+            
+            dispose();
+        }
+    }
+    
+    public RawKey generateKey() {
+        key = new RawKey();
+        req = 0;
         dispose();
+        return key;
     }
     
-    /**
-     * Completes the information, if possible
-     *
-     * @throws RateLimit If the API threw a RateLimit
-     * @throws IOException If the API is unreachable
-     */
-    public void complete() throws RateLimit, IOException {
-        Lock lock = TudbuTAPI.getRateLimitLock();
-        if(uuid == null) {
-            lock.waitHere();
-            uuid = TudbuTAPI.getUUID(name);
-        }
-        if(uuid != null && name == null) {
-            lock.waitHere();
-            name = TudbuTAPI.getName(uuid);
-        }
-    }
-    
-    /**
-     * Stores changed information back to the TCN, DOES NOT CHANGE THE VALUES IN THE DATABASE, ONLY ADJUSTS THE TCN
-     */
     public void dispose() {
-        tcn.set("lastNameUpdate", lastNameUpdate);
-        tcn.set("registered", registered);
-        tcn.set("password", hashedPassword);
-        tcn.set("lastLogin", lastLogin);
-        tcn.set("name", name);
-        tcn.set("playTime", playTime);
-        tcn.set("lastPlayRequest", lastPlayRequest);
-        tcn.set("deactivate", deactivate);
-        tcn.set("singleDeactivate", singleDeactivate);
+        set("lastNameUpdate", lastNameUpdate);
+        set("registered", registered);
+        set("password", hashedPassword);
+        set("lastLogin", lastLogin);
+        set("name", name);
+        set("playTime", playTime);
+        set("lastPlayRequest", lastPlayRequest);
+        set("deactivate", deactivate);
+        set("singleDeactivate", singleDeactivate);
+        set("key", key.toString());
+        set("handshakeSucceeded", handshakeSucceeded);
+        set("version", version);
+        set("req", req);
+        set("ip", ip);
+    }
+    
+    private void set(String k, Object v) {
+        if(!Objects.equals(tcn.get(k), v)) {
+            tcn.set(k, v);
+        }
+    }
+    
+    public TCN get() {
+        TCN tcn = TCN.readMap(this.tcn.toMap());
+        tcn.set("key", "REDACTED");
+        tcn.set("req", "REDACTED");
+        tcn.set("ip", "REDACTED_FOR_PRIVACY");
+        return tcn;
     }
 }
