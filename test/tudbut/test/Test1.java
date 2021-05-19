@@ -28,27 +28,7 @@ public class Test1 {
     
         System.out.println(TudbuTAPIV2.request(uuid, "check", "").t);
         System.out.println(TudbuTAPIV2.request(uuid, "track/login", "TTC TudbuT/ttc:master@v1.9.0a").t);
-        PBIC2 pbic2 = TudbuTAPIV2.connectGateway(uuid);
         
-        Thread.sleep(3000);
-        System.out.println(pbic2.readMessage());
-        while(true) {
-            try {
-                System.out.println(Arrays.toString(ArrayTools.getFromArray(new TudbuTAPIGateway(pbic2).getUserRecords().waitForFinish(0), r -> r.tcn.toString())));
-            } catch (Restart restart) {
-                System.out.println("RESTART");
-                Thread.sleep(15000);
-                
-                System.out.println("Handshake...");
-                TudbuTAPIV2.handshake(uuid);
-                System.out.println("Handshake done.");
-    
-                System.out.println(TudbuTAPIV2.request(uuid, "check", "").t);
-                System.out.println(TudbuTAPIV2.request(uuid, "track/login", "TTC TudbuT/ttc:master@v1.9.0a").t);
-    
-                pbic2 = TudbuTAPIV2.connectGateway(uuid);
-            }
-        }
     
     }
 }
