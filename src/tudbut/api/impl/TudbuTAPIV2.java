@@ -121,12 +121,16 @@ public class TudbuTAPIV2 {
     }
     
     public static DoubleTypedObject<Boolean, String> request(UUID uuid, String path, String body) throws IOException, RateLimit {
-        RawKey key = req.get(uuid).t;
-        HTTPRequest request = new HTTPRequest(HTTPRequestType.POST, host, port, "/api/v2/" + path + "?uuid=" + uuid, HTTPContentType.TXT, key.encryptString(body), nextAuthorizationHeader(uuid));
-        ParsedHTTPValue p = request.send().parse();
-        checkRateLimit(p, uuid);
-        String s = p.getBodyRaw();
-        return new DoubleTypedObject<>(p.getStatusCodeAsEnum() == HTTPResponseCode.OK, p.getStatusCodeAsEnum() != HTTPResponseCode.OK ? s : key.decryptString(s));
+        try {
+            RawKey key = req.get(uuid).t;
+            HTTPRequest request = new HTTPRequest(HTTPRequestType.POST, host, port, "/api/v2/" + path + "?uuid=" + uuid, HTTPContentType.TXT, key.encryptString(body), nextAuthorizationHeader(uuid));
+            ParsedHTTPValue p = request.send().parse();
+            checkRateLimit(p, uuid);
+            String s = p.getBodyRaw();
+            return new DoubleTypedObject<>(p.getStatusCodeAsEnum() == HTTPResponseCode.OK, p.getStatusCodeAsEnum() != HTTPResponseCode.OK ? s : key.decryptString(s));
+        } catch(NullPointerException e) {
+            throw new IOException("Uninitialized auth");
+        }
     }
     
     public static AsyncTask<DoubleTypedObject<Boolean, String>> requestAsync(UUID uuid, String path, String body) {
