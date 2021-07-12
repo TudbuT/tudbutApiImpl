@@ -13,6 +13,7 @@ import tudbut.tools.Lock;
 import java.io.IOException;
 import java.util.UUID;
 
+@Deprecated
 public class TudbuTAPIGateway {
     final PBIC2 pbic2;
     
@@ -119,9 +120,9 @@ public class TudbuTAPIGateway {
             try {
                 rec = JSON.read(pbic2.writeMessageWithResponse(JSON.write(tcn)));
             }
-            catch (JSON.JSONFormatException e) {
-            
+            catch (JSON.JSONFormatException ignored) {
             }
+
             if ("response".equals(rec.getString("id"))) {
                 return rec.getString("data");
             }
