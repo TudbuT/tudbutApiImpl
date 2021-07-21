@@ -25,6 +25,8 @@ import static tudbut.api.impl.TudbuTAPI.rateLimitLock;
 public class TudbuTAPIV2 {
     public static final String host = TudbuTAPI.host;
     public static final int port = TudbuTAPI.port;
+    public static final String hostHTTP = TudbuTAPI.hostHTTP;
+    public static final int portHTTP = TudbuTAPI.portHTTP;
     
     public static DoubleTypedObject<Integer, RawKey> getReq(UUID uuid) {
         return req.get(uuid).clone();
@@ -152,7 +154,7 @@ public class TudbuTAPIV2 {
     
     public static PBIC2 connectGateway(UUID uuid) throws IOException {
         KeyStream key = new KeyStream(req.get(uuid).t);
-        HTTPRequest request = new HTTPRequest(HTTPRequestType.POST, host, port, "/api/v2/gateway?uuid=" + uuid, HTTPContentType.ANY, "", nextAuthorizationHeader(uuid));
+        HTTPRequest request = new HTTPRequest(HTTPRequestType.POST, hostHTTP, portHTTP, "/api/v2/gateway?uuid=" + uuid, HTTPContentType.ANY, "", nextAuthorizationHeader(uuid));
         return new PBIC2() {
             private final PBIC2 c = new PBIC2Client(request, i -> {
                 i = key.decrypt(i);
