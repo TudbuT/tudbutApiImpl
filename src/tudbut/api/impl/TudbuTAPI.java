@@ -20,10 +20,10 @@ import static tudbut.api.impl.TudbuTAPIV2.checkRateLimit;
 
 @SuppressWarnings("unused")
 public class TudbuTAPI {
-    public static final String host = "https://api.tudbut.de";
-    public static final int port = 443;
-    public static final String hostHTTP = "api.tudbut.de";
-    public static final int portHTTP = 80;
+    public static String host = "https://api.tudbut.de";
+    public static int port = 443;
+    public static String hostHTTP = "api.tudbut.de";
+    public static int portHTTP = 80;
     
     static final Lock rateLimitLock = new Lock();
     static final TLMap<UUID, PBIC2> gateway = new TLMap<>();
