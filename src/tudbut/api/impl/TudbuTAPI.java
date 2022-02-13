@@ -21,7 +21,7 @@ import static tudbut.api.impl.TudbuTAPIV2.checkRateLimit;
 @SuppressWarnings("unused")
 public class TudbuTAPI {
     public static String host = "https://api.tudbut.de";
-    public static int port = 444;
+    public static int port = 83;
     public static String hostHTTP = "api.tudbut.de";
     public static int portHTTP = 82;
     
