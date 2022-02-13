@@ -2,11 +2,11 @@ package tudbut.api.impl;
 
 import de.tudbut.timer.AsyncTask;
 import de.tudbut.tools.Hasher;
-import sun.awt.windows.ThemeReader;
 import tudbut.io.TypedInputStream;
 import tudbut.io.TypedOutputStream;
 import tudbut.net.http.*;
-import tudbut.net.pbic2.*;
+import tudbut.net.pbic2.PBIC2;
+import tudbut.net.pbic2.PBIC2Client;
 import tudbut.obj.DoubleTypedObject;
 import tudbut.parsing.JSON;
 import tudbut.parsing.TCN;
@@ -20,13 +20,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static tudbut.api.impl.TudbuTAPI.rateLimitLock;
+import static tudbut.api.impl.TudbuTAPI.*;
 
+@SuppressWarnings("unused")
 public class TudbuTAPIV2 {
-    public static final String host = TudbuTAPI.host;
-    public static final int port = TudbuTAPI.port;
-    public static final String hostHTTP = TudbuTAPI.hostHTTP;
-    public static final int portHTTP = TudbuTAPI.portHTTP;
     
     public static DoubleTypedObject<Integer, RawKey> getReq(UUID uuid) {
         return req.get(uuid).clone();
@@ -172,7 +169,7 @@ public class TudbuTAPIV2 {
                         throw new Restart();
                     }
                 }
-                catch (JSON.JSONFormatException e) {
+                catch (JSON.JSONFormatException ignored) {
                 }
                 return m;
             }
