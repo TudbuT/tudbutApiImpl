@@ -23,7 +23,7 @@ public class TudbuTAPI {
     public static String host = "https://api.tudbut.de";
     public static int port = 83;
     public static String hostHTTP = "api.tudbut.de";
-    public static int portHTTP = 82;
+    public static int portHTTP = 84;
     
     static final Lock rateLimitLock = new Lock();
     static final TLMap<UUID, PBIC2> gateway = new TLMap<>();

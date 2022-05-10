@@ -151,7 +151,7 @@ public class TudbuTAPIV2 {
     
     public static PBIC2 connectGateway(UUID uuid) throws IOException {
         KeyStream key = new KeyStream(req.get(uuid).t);
-        HTTPRequest request = new HTTPRequest(HTTPRequestType.POST, hostHTTP, portHTTP, "/api/v2/gateway?uuid=" + uuid, HTTPContentType.ANY, "", nextAuthorizationHeader(uuid));
+        HTTPRequest request = new HTTPRequest(HTTPRequestType.POST, host, port, "/api/v2/gateway?uuid=" + uuid, HTTPContentType.ANY, "", nextAuthorizationHeader(uuid));
         return new PBIC2() {
             private final PBIC2 c = new PBIC2Client(request, i -> {
                 i = key.decrypt(i);
