@@ -60,7 +60,7 @@ public class TudbuTAPIV2 {
         return key;
     }
     
-    static void checkRateLimit(ParsedHTTPValue p, UUID uuid) throws RateLimit {
+    public static void checkRateLimit(ParsedHTTPValue p, UUID uuid) throws RateLimit {
         rateLimitLock.lock((int) (150 + rateLimitLock.timeLeft()));
         if(p.getStatusCodeAsEnum() == HTTPResponseCode.TooManyRequests) {
             try {

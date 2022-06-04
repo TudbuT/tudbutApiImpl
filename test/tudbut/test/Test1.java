@@ -28,7 +28,7 @@ public class Test1 {
         System.out.println("Handshake done.");
     
         System.out.println(TudbuTAPIV2.request(uuid, "check", "").t);
-        System.out.println(TudbuTAPIV2.request(uuid, "track/login", "TTC TudbuT/ttc:master@v1.9.0a").t);
+        System.out.println(TudbuTAPIV2.request(uuid, "track/login", "de.tudbut.api TudbuT/tudbutApiImpl:master@v0.0.0a").t);
         //System.out.println(TudbuTAPIV2.request(uuid, "message", "other=65a10b8e-2dc4-44fa-9064-4be955e911b6", "§f§n§lTudbuT2 is real").t);
     
         PBIC2AListener listener = new PBIC2AListener() {
