@@ -19,7 +19,7 @@ import static de.tudbut.api.TudbuTAPI.*;
 public class User {
     
     
-    private TCN object;
+    public TCN object;
     private UUID uuid;
     
     public User(TCN object, UUID uuid) {
@@ -73,7 +73,7 @@ public class User {
     
     public Task<User> retrieveSelf() {
         return getUUID()
-                .<ParsedHTTPValue>compose((resp, res, rej) -> get("getUserRecord", "uuid=" + resp).then(res).err(rej))
+                .<ParsedHTTPValue>compose((resp, res, rej) -> get("getUserRecord", "uuid=" + resp).then(res).err(rej).ok())
                 .compose(parseTCN)
                 .compose((resp, res, rej) -> {
                     this.object = resp;

@@ -31,7 +31,7 @@ public class TudbuTAPI {
             rej.call(e);
         }
     };
-    static final ComposeCallback<ParsedHTTPValue, TCN> parseJSON = (resp, res, rej) -> AsyncJSON.read(resp.getBody()).then(res).err(rej).ok().await();
+    static final ComposeCallback<ParsedHTTPValue, TCN> parseJSON = (resp, res, rej) -> AsyncJSON.read(resp.getBody()).then(res).err(rej).ok();
     
     public static Task<User[]> getAllUsers() {
         return get("getUsers", "")
