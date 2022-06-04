@@ -1,13 +1,16 @@
 package de.tudbut.api;
 
 import de.tudbut.async.ComposeCallback;
+import de.tudbut.async.Reject;
 import de.tudbut.async.Task;
 import tudbut.net.http.HTTPRequest;
 import tudbut.net.http.HTTPRequestType;
 import tudbut.net.http.ParsedHTTPValue;
+import tudbut.parsing.AsyncJSON;
 import tudbut.parsing.JSON;
 import tudbut.parsing.TCN;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import static tudbut.api.impl.TudbuTAPIV2.checkRateLimit;
@@ -28,6 +31,7 @@ public class TudbuTAPI {
             rej.call(e);
         }
     };
+    static final ComposeCallback<ParsedHTTPValue, TCN> parseJSON = (resp, res, rej) -> AsyncJSON.read(resp.getBody()).then(res).err(rej).ok().await();
     
     public static Task<User[]> getAllUsers() {
         return get("getUsers", "")
@@ -67,6 +71,30 @@ public class TudbuTAPI {
     public static Task<UUID> getUUID(String name) {
         return get("getUUID", "name=" + name)
                 .compose(parseUUID);
+    }
+    
+    public static Task<UUID> getUUIDFromMojang(String name) {
+        return new Task<ParsedHTTPValue>((res, rej) -> {
+            HTTPRequest uuidRequest = new HTTPRequest(HTTPRequestType.GET, "https://api.mojang.com", 443, "/users/profiles/minecraft/" + name);
+            try {
+                res.call(uuidRequest.send().parse());
+            }
+            catch (IOException e) {
+                rej.call(e);
+            }
+        })
+                .compose(parseJSON)
+                .compose((resp, res, rej) -> {
+                    String uuidString = resp.getString("id");
+                    uuidString =
+                            uuidString.substring(0, 8) + "-" +
+                            uuidString.substring(8, 8 + 4) + "-" +
+                            uuidString.substring(8 + 4, 8 + 4 + 4) + "-" +
+                            uuidString.substring(8 + 4 + 4, 8 + 4 + 4 + 4) + "-" +
+                            uuidString.substring(8 + 4 + 4 + 4, 8 + 4 + 4 + 4 + 12)
+                    ;
+                    res.call(UUID.fromString(uuidString));
+                });
     }
     
     public static Task<Long> getOverallPlaytime() {

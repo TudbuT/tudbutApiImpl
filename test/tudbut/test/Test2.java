@@ -33,6 +33,7 @@ public class Test2 {
                      res.call(resp);
                      System.out.println("C");
                  }).then(System.out::println).then(user -> System.out.println(user.getVersion().isOlderThan(new TTCVersion("", "", "v0.0.0a")))).err(Throwable::printStackTrace).ok();
+        TudbuTAPI.getUUIDFromMojang("TudbuT").then(System.out::println).ok();
         TaskQueue.main.finish();
         System.exit(0);
     }
