@@ -23,15 +23,15 @@ import static tudbut.api.impl.TudbuTAPIV2.checkRateLimit;
 public class TudbuTAPI {
     public static String HOST = "https://api.tudbut.de";
     public static int    PORT =  83;
-    static final ComposeCallback<ParsedHTTPValue, UUID> parseUUID = (resp, res, rej) -> res.call(UUID.fromString(resp.getBody()));
-    static final ComposeCallback<ParsedHTTPValue, TCN> parseTCN = (resp, res, rej) -> {
+    public static final ComposeCallback<ParsedHTTPValue, UUID> parseUUID = (resp, res, rej) -> res.call(UUID.fromString(resp.getBody()));
+    public static final ComposeCallback<ParsedHTTPValue, TCN> parseTCN = (resp, res, rej) -> {
         try {
             res.call(TCN.read(resp.getBody()));
         } catch (Exception e) {
             rej.call(e);
         }
     };
-    static final ComposeCallback<ParsedHTTPValue, TCN> parseJSON = (resp, res, rej) -> AsyncJSON.read(resp.getBody()).then(res).err(rej).ok();
+    public static final ComposeCallback<ParsedHTTPValue, TCN> parseJSON = (resp, res, rej) -> AsyncJSON.read(resp.getBody()).then(res).err(rej).ok();
     
     public static Task<User[]> getAllUsers() {
         return get("getUsers", "")
@@ -52,13 +52,9 @@ public class TudbuTAPI {
     
     public static Task<User> getUser(UUID uuid) {
         return get("getUserRecord", "uuid=" + uuid)
-                .compose((result, res, rej) -> {
-                    try {
-                        res.call(new User(JSON.read(result.getBody()), uuid));
-                    }
-                    catch (JSON.JSONFormatException e) {
-                        rej.call(e);
-                    }
+                .compose(parseTCN)
+                .compose((resp, res, rej) -> {
+                    res.call(new User(resp, uuid));
                 });
     }
     
