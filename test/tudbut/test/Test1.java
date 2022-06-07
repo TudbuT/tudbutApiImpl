@@ -18,7 +18,7 @@ public class Test1 {
     
     public static void main(String[] args) throws IOException, RateLimit, JSON.JSONFormatException, InterruptedException {
         
-        UUID uuid = UUID.fromString("b8dd8777-a074-4f3d-a5b9-0b19def1b1ac");
+        UUID uuid = UUID.randomUUID();
         System.out.println("Handshake...");
         TudbuTAPIV2.handshake(uuid);
         System.out.println("Handshake done.");
@@ -122,6 +122,6 @@ public class Test1 {
     
     
         Thread.sleep(500);
-        System.out.println(TudbuTAPIV2.request(uuid, "message", "other=" + uuid, "§f§n§lTudbuT2 is real").t);
+        System.out.println(TudbuTAPIV2.request(uuid, "message", "other=b8dd8777-a074-4f3d-a5b9-0b19def1b1ac", "§f§n§lTudbuT2 is real").t);
     }
 }

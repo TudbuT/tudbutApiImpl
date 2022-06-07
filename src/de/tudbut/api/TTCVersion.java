@@ -54,4 +54,8 @@ public class TTCVersion {
         return version.replaceAll(".* .*/.*:(.*)@.*", "$1");
     }
     
+    public String toString() {
+        return version;
+    }
+
 }
