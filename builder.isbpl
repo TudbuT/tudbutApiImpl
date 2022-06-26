@@ -217,6 +217,15 @@ func makeManifest {
     file STREAM.close stream
 }
 
+def toClean [ 
+    "build"
+    "lib"
+    name ".jar" strconcat
+    "run.sh"
+    "javadoc"
+    name "-javadoc.zip" strconcat
+] =toClean
+
 func clean {
     def script "clean.sh" STREAM.create.file.out stream =script
     "\n> Cleaning..." puts
@@ -226,14 +235,7 @@ func clean {
         "rm -rf '" script stream.write
         file script stream.write
         "'\n" script stream.write
-    } [ 
-        "build"
-        "lib"
-        name ".jar" strconcat
-        "run.sh"
-        "javadoc"
-        name "-javadoc.zip" strconcat
-    ] foreach
+    } toClean foreach
     script STREAM.close stream
     ([ "bash" "clean.sh" ] ProcessBuilder°new1)°inheritIO0°start0°waitFor0 pop
 }
@@ -242,6 +244,14 @@ def tasks [ "javadoc" "clean" "build" "makeManifest" "run" "jar" ] =tasks
 
 func task {
     [ swap ] tasks aadd =tasks
+}
+
+func isATask {
+    task
+}
+
+func isToClean {
+    [ swap ] toClean aadd =toClean
 }
 
 "Placeholders begin" #
