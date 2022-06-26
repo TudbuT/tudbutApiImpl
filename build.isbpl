@@ -1,0 +1,7 @@
+"builder.isbpl" include
+
+func dependencies {
+    "https://github.com/TudbuT/tuddylib/raw/master/TuddyLIB.jar" download
+}
+
+"tudbutApiImpl" =name

@@ -1,2 +1,6 @@
 # Project exclude paths
 /out/
+/build
+/run.sh
+/lib
+/javadoc
