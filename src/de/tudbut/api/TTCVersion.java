@@ -1,6 +1,8 @@
 package de.tudbut.api;
 
 /**
+ * Representation of a version of TTC
+ *
  * @author TudbuT
  * @since 03 Jun 2022
  */

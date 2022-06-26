@@ -12,6 +12,7 @@ import java.util.UUID;
 import static de.tudbut.api.TudbuTAPI.*;
 
 /**
+ * Representation of a User of TTC/TTCp/other
  * @author TudbuT
  * @since 03 Jun 2022
  */

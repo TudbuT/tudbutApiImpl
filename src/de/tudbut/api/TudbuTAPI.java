@@ -23,7 +23,13 @@ import static tudbut.api.impl.TudbuTAPIV2.checkRateLimit;
 public class TudbuTAPI {
     public static String HOST = "https://api.tudbut.de";
     public static int    PORT =  83;
+    /**
+     * Transforms the body into a UUID
+     */
     public static final ComposeCallback<ParsedHTTPValue, UUID> parseUUID = (resp, res, rej) -> res.call(UUID.fromString(resp.getBody()));
+    /**
+     * Reads the body as TCN
+     */
     public static final ComposeCallback<ParsedHTTPValue, TCN> parseTCN = (resp, res, rej) -> {
         try {
             res.call(TCN.read(resp.getBody()));
@@ -31,6 +37,9 @@ public class TudbuTAPI {
             rej.call(e);
         }
     };
+    /**
+     * Reads the body as JSON
+     */
     public static final ComposeCallback<ParsedHTTPValue, TCN> parseJSON = (resp, res, rej) -> AsyncJSON.read(resp.getBody()).then(res).err(rej).ok();
     
     public static Task<User[]> getAllUsers() {
